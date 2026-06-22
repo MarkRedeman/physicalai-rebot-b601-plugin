@@ -25,6 +25,6 @@ jobs:
           persist-credentials: false
 
       - name: Validate renovate config
-        uses: suzuki-shunsuke/github-action-renovate-config-validator@fe49edf1f9911c4b1dcef60f1c2ede8cde414d6b # v2.0.0
+        uses: suzuki-shunsuke/github-action-renovate-config-validator@ca480cb7ec89a9e1cd8c214ad33bda1617184027 # v2.0.0
         with:
           config_file_path: .github/renovate.json5
