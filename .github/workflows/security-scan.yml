@@ -13,12 +13,17 @@ on:
 
 permissions: {}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   zizmor-scan:
+    name: Zizmor scan
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      security-events: write
+      contents: read # to check out code
+      security-events: write # to upload SARIF results
     steps:
       - &checkout
         name: Checkout code
@@ -35,10 +40,11 @@ jobs:
           fail-on-findings: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
 
   bandit-scan:
+    name: Bandit scan
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      security-events: write
+      contents: read # to check out code
+      security-events: write # to upload SARIF results
     steps:
       - *checkout
 
@@ -52,10 +58,11 @@ jobs:
           fail-on-findings: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
 
   semgrep-scan:
+    name: Semgrep scan
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      security-events: write
+      contents: read # to check out code
+      security-events: write # to upload SARIF results
     steps:
       - name: Checkout code
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3

@@ -6,13 +6,18 @@ on:
       - ".github/renovate.json5"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions: {}
 
 jobs:
   validate:
+    name: Validate renovate config
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: read # to check out code
     steps:
       - name: Checkout code
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3

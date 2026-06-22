@@ -7,10 +7,15 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions: {}
 
 jobs:
   code-quality:
+    name: Code quality
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -32,6 +37,7 @@ jobs:
           extra-args: --all-files
 
   unit-tests:
+    name: Unit tests
     runs-on: ubuntu-latest
     permissions:
       contents: read
