@@ -1,0 +1,30 @@
+"""URDF path utility for bundled robot description packages."""
+
+from __future__ import annotations
+
+import importlib.resources as ir
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+
+def get_urdf_path() -> Path:
+    """Return the path to the bundled URDF directory.
+
+    The URDF files are installed alongside the Python package. This function
+    locates them regardless of whether the package is installed in development
+    mode (editable) or from a wheel.
+
+    Returns:
+        Path to the ``urdf/`` directory containing robot description packages.
+
+    Example:
+        >>> from physicalai_rebot_b601_plugin import get_urdf_path
+        >>> urdf_dir = get_urdf_path()
+        >>> dm_urdf = urdf_dir / "rebot-b601-dm" / "urdf" / "reBot-DevArm_fixend.urdf"
+        >>> rs_urdf = urdf_dir / "rebot-b601-rs" / "urdf" / "00-arm-rs_asm-v3.urdf"
+        >>> star_urdf = urdf_dir / "stararm102" / "urdf" / "stararm102_description.urdf"
+
+    """
+    return ir.files("physicalai_rebot_b601_plugin").parent.parent.joinpath("urdf")
