@@ -7,11 +7,30 @@ on:
 permissions: {}
 
 jobs:
-  check:
+  validate:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
       pull-requests: read
     steps:
       - name: Check PR title
-        uses: open-edge-platform/geti-ci/actions/conventional-pr-title@0bed754fc7db24b5f9f15e7ead2eb4acdb0c7263 # v0.1.2
+        uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            refactor
+            test
+            chore
+            ci
+            perf
+            revert
+          requireScope: false
+          subjectPattern: ^.+$
+          subjectPatternError: |
+            The subject (after "type: ") cannot be empty.
+          validateSingleCommit: false
+          ignoreLabels: |
+            skip-conventional-commits
