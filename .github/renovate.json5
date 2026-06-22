@@ -1,15 +1,30 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
-  "labels": ["dependencies"],
+  "extends": [
+    "config:recommended",
+    "group:all"
+  ],
+  "pinDigests": true,
+  "stabilityDays": 3,
   "packageRules": [
     {
-      "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
+      "matchManagers": [
+        "github-actions"
+      ],
+      "pinDigests": true,
+      "groupName": "github-actions"
     }
   ],
+  "schedule": [
+    "before 5am on Monday"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "prCreation": "immediate",
+  "prHourlyLimit": 1,
+  "prConcurrentLimit": 1,
   "pre-commit": {
     "enabled": true
-  },
-  "schedule": ["before 6am on monday"]
+  }
 }
