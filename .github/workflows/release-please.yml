@@ -18,8 +18,18 @@ jobs:
     permissions:
       contents: write # to create tags and releases
       pull-requests: write # to create release PRs
+      actions: write # to trigger publish workflow
     steps:
-      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+      - id: release-please
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
           release-type: python
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger publish workflow
+        if: ${{ steps.release-please.outputs.release_created == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ steps.release-please.outputs.tag_name }}
+        run: |
+          gh workflow run publish.yml -f tag_name="${TAG_NAME}"
