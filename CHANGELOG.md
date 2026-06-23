@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/MarkRedeman/physicalai-rebot-b601-plugin/compare/v0.1.1...v0.1.2) (2026-06-23)
+
+
+### Bug Fixes
+
+* trigger publish workflow on release via workflow_dispatch instead of relying on release event ([f98747c](https://github.com/MarkRedeman/physicalai-rebot-b601-plugin/commit/f98747c4bf76e83748f65384e48df437392c25c5))
+
 ## [0.1.1](https://github.com/MarkRedeman/physicalai-rebot-b601-plugin/compare/v0.1.0...v0.1.1) (2026-06-23)
 
 
