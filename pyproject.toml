@@ -7,7 +7,7 @@ name = "physicalai-rebot-b601-plugin"
 version = "0.1.1"
 description = "Third-party Seeed reBot B601 robot arm plugin for PhysicalAI"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 license = "Apache-2.0"
 dependencies = [
     "physicalai>=0.1.1",
