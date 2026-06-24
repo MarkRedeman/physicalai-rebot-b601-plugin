@@ -13,9 +13,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Protocol
 
 from loguru import logger
+from physicalai.robot.interface import Robot as PhysicalAIRobot
+from pydantic import BaseModel, Field
 
 import physicalai_rebot_b601_plugin
-from physicalai_rebot_b601_plugin import get_urdf_path
+from physicalai_rebot_b601_plugin import ReBotArm102Leader, ReBotB601DM, get_urdf_path
 
 
 class _SerialPortInfo(Protocol):
@@ -37,6 +39,15 @@ class _CatalogEntry:
 _AssetSource = Literal["builtin", "plugin"]
 _DiscoverDevicesCallable = Callable[[list[_SerialPortInfo]], Awaitable[list[_SerialPortInfo]]]
 _AssetRootResolver = Callable[[], Path]
+_BuildRobotCallable = Callable[[object, object], Awaitable[PhysicalAIRobot]]
+_PayloadModelType = type[BaseModel]
+
+
+@dataclass(frozen=True)
+class _RobotAdapterOptions:
+    include_velocities: bool = False
+    goal_time_scale: float = 1.0
+    external_effort_gain: float | None = 0.1
 
 
 @dataclass(frozen=True)
@@ -47,6 +58,9 @@ class _CatalogDefinition:
     asset_source: _AssetSource
     asset_root_resolver: _AssetRootResolver | None
     discover_devices: _DiscoverDevicesCallable
+    robot_builder: _BuildRobotCallable | None = None
+    payload_model: _PayloadModelType | None = None
+    adapter_options: _RobotAdapterOptions = _RobotAdapterOptions()
 
     @property
     def robot_type(self) -> str:
@@ -104,6 +118,63 @@ async def _discover_rebot_devices(devices: list[_SerialPortInfo]) -> list[_Seria
     return devices
 
 
+class ReBotB601DMPayload(BaseModel):
+    """Connection payload for a ReBot B601 DM follower arm."""
+
+    connection_string: str = ""
+    serial_number: str = Field(...)
+    can_adapter: str = "damiao"
+    dm_serial_baud: int = 921600
+    disable_torque_on_disconnect: bool = True
+    force_pos_torque_ratio: float = 0.1
+
+
+class ReBotArm102Payload(BaseModel):
+    """Connection payload for a ReBot Arm102 leader arm."""
+
+    connection_string: str = ""
+    serial_number: str = Field(...)
+    baudrate: int = 1_000_000
+    unlock_on_connect: bool = True
+    reset_multi_turn_on_connect: bool = True
+    zero_on_connect: bool = False
+
+
+async def _build_rebot_b601_dm_driver(robot: object, factory: object) -> PhysicalAIRobot:
+    payload = robot.payload.model_dump(mode="json")   # type: ignore[union-attr]
+    serial_number = str(payload["serial_number"])
+    port = await factory.find_port_by_serial(serial_number)  # type: ignore[union-attr]
+    if port is None:
+        msg = f"Robot not found: {serial_number}"
+        raise RuntimeError(msg)
+
+    return ReBotB601DM(
+        port=port,
+        can_adapter=str(payload.get("can_adapter", "damiao")),
+        dm_serial_baud=int(payload.get("dm_serial_baud", 921600)),
+        role="follower",
+        disable_torque_on_disconnect=bool(payload.get("disable_torque_on_disconnect", True)),
+        force_pos_torque_ratio=float(payload.get("force_pos_torque_ratio", 0.1)),
+    )
+
+
+async def _build_rebot_arm102_driver(robot: object, factory: object) -> PhysicalAIRobot:
+    payload = robot.payload.model_dump(mode="json")  # type: ignore[union-attr]
+    serial_number = str(payload["serial_number"])
+    port = await factory.find_port_by_serial(serial_number)  # type: ignore[union-attr]
+    if port is None:
+        msg = f"Robot not found: {serial_number}"
+        raise RuntimeError(msg)
+
+    return ReBotArm102Leader(
+        port=port,
+        baudrate=int(payload.get("baudrate", 1_000_000)),
+        unlock_on_connect=bool(payload.get("unlock_on_connect", True)),
+        reset_multi_turn_on_connect=bool(payload.get("reset_multi_turn_on_connect", True)),
+        zero_on_connect=bool(payload.get("zero_on_connect", False)),
+    )
+
+
 def _definitions() -> list[_CatalogDefinition]:
     return [
         _CatalogDefinition(
@@ -122,6 +193,9 @@ def _definitions() -> list[_CatalogDefinition]:
             asset_source="plugin",
             asset_root_resolver=_get_rebot_urdf_root,
             discover_devices=_discover_rebot_devices,
+            robot_builder=_build_rebot_b601_dm_driver,
+            payload_model=ReBotB601DMPayload,
+            adapter_options=_RobotAdapterOptions(include_velocities=True, external_effort_gain=None),
         ),
         _CatalogDefinition(
             entry=_CatalogEntry(
@@ -139,6 +213,9 @@ def _definitions() -> list[_CatalogDefinition]:
             asset_source="plugin",
             asset_root_resolver=_get_rebot_urdf_root,
             discover_devices=_discover_rebot_devices,
+            robot_builder=_build_rebot_arm102_driver,
+            payload_model=ReBotArm102Payload,
+            adapter_options=_RobotAdapterOptions(include_velocities=False, external_effort_gain=None),
         ),
     ]
 
