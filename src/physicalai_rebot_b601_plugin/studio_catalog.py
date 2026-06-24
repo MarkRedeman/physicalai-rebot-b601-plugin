@@ -10,7 +10,7 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Protocol
+from typing import TYPE_CHECKING, Literal, Protocol, TypeVar
 
 from loguru import logger
 from physicalai.robot.interface import Robot as PhysicalAIRobot
@@ -18,6 +18,16 @@ from pydantic import BaseModel, Field
 
 import physicalai_rebot_b601_plugin
 from physicalai_rebot_b601_plugin import ReBotArm102Leader, ReBotB601DM, get_urdf_path
+
+_PayloadT_co = TypeVar("_PayloadT_co", covariant=True)
+
+
+class _PayloadContainer(Protocol[_PayloadT_co]):
+    payload: _PayloadT_co
+
+
+class _PortFinder(Protocol):
+    async def find_port_by_serial(self, serial_number: str) -> str | None: ...
 
 
 class _SerialPortInfo(Protocol):
@@ -140,38 +150,58 @@ class ReBotArm102Payload(BaseModel):
     zero_on_connect: bool = False
 
 
-async def _build_rebot_b601_dm_driver(robot: object, factory: object) -> PhysicalAIRobot:
-    payload = robot.payload.model_dump(mode="json")   # type: ignore[union-attr]
-    serial_number = str(payload["serial_number"])
-    port = await factory.find_port_by_serial(serial_number)  # type: ignore[union-attr]
+async def _build_rebot_b601_dm_driver(
+    robot: _PayloadContainer[ReBotB601DMPayload],
+    factory: _PortFinder,
+) -> PhysicalAIRobot:
+    raw = robot.payload
+    if isinstance(raw, ReBotB601DMPayload):
+        validated = raw
+    elif isinstance(raw, dict):
+        validated = ReBotB601DMPayload.model_validate(raw)
+    else:
+        validated = ReBotB601DMPayload.model_validate(raw.model_dump(mode="json"))
+
+    serial_number = validated.serial_number
+    port = await factory.find_port_by_serial(serial_number)
     if port is None:
         msg = f"Robot not found: {serial_number}"
         raise RuntimeError(msg)
 
     return ReBotB601DM(
         port=port,
-        can_adapter=str(payload.get("can_adapter", "damiao")),
-        dm_serial_baud=int(payload.get("dm_serial_baud", 921600)),
+        can_adapter=validated.can_adapter,
+        dm_serial_baud=validated.dm_serial_baud,
         role="follower",
-        disable_torque_on_disconnect=bool(payload.get("disable_torque_on_disconnect", True)),
-        force_pos_torque_ratio=float(payload.get("force_pos_torque_ratio", 0.1)),
+        disable_torque_on_disconnect=validated.disable_torque_on_disconnect,
+        force_pos_torque_ratio=validated.force_pos_torque_ratio,
     )
 
 
-async def _build_rebot_arm102_driver(robot: object, factory: object) -> PhysicalAIRobot:
-    payload = robot.payload.model_dump(mode="json")  # type: ignore[union-attr]
-    serial_number = str(payload["serial_number"])
-    port = await factory.find_port_by_serial(serial_number)  # type: ignore[union-attr]
+async def _build_rebot_arm102_driver(
+    robot: _PayloadContainer[ReBotArm102Payload],
+    factory: _PortFinder,
+) -> PhysicalAIRobot:
+    raw = robot.payload
+    if isinstance(raw, ReBotArm102Payload):
+        validated = raw
+    elif isinstance(raw, dict):
+        validated = ReBotArm102Payload.model_validate(raw)
+    else:
+        validated = ReBotArm102Payload.model_validate(raw.model_dump(mode="json"))
+
+    serial_number = validated.serial_number
+    port = await factory.find_port_by_serial(serial_number)
     if port is None:
         msg = f"Robot not found: {serial_number}"
         raise RuntimeError(msg)
 
     return ReBotArm102Leader(
         port=port,
-        baudrate=int(payload.get("baudrate", 1_000_000)),
-        unlock_on_connect=bool(payload.get("unlock_on_connect", True)),
-        reset_multi_turn_on_connect=bool(payload.get("reset_multi_turn_on_connect", True)),
-        zero_on_connect=bool(payload.get("zero_on_connect", False)),
+        baudrate=validated.baudrate,
+        unlock_on_connect=validated.unlock_on_connect,
+        reset_multi_turn_on_connect=validated.reset_multi_turn_on_connect,
+        zero_on_connect=validated.zero_on_connect,
     )
 
 
