@@ -27,4 +27,6 @@ def get_urdf_path() -> Path:
         >>> star_urdf = urdf_dir / "stararm102" / "urdf" / "stararm102_description.urdf"
 
     """
-    return ir.files("physicalai_rebot_b601_plugin").parent.parent.joinpath("urdf")
+    traversal = ir.files("physicalai_rebot_b601_plugin")
+    with ir.as_file(traversal) as p:
+        return p.parent.parent.joinpath("urdf")

@@ -49,7 +49,7 @@ class _CatalogEntry:
 _AssetSource = Literal["builtin", "plugin"]
 _DiscoverDevicesCallable = Callable[[list[_SerialPortInfo]], Awaitable[list[_SerialPortInfo]]]
 _AssetRootResolver = Callable[[], Path]
-_BuildRobotCallable = Callable[[object, object], Awaitable[PhysicalAIRobot]]
+_BuildRobotCallable = Callable[..., Awaitable[PhysicalAIRobot]]
 _PayloadModelType = type[BaseModel]
 
 
@@ -133,7 +133,7 @@ class ReBotB601DMPayload(BaseModel):
 
     connection_string: str = ""
     serial_number: str = Field(...)
-    can_adapter: str = "damiao"
+    can_adapter: Literal["damiao", "socketcan"] = "damiao"
     dm_serial_baud: int = 921600
     disable_torque_on_disconnect: bool = True
     force_pos_torque_ratio: float = 0.1

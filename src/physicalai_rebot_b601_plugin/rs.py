@@ -11,7 +11,7 @@ import contextlib
 import math
 import time
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, ClassVar, Literal, Protocol
+from typing import TYPE_CHECKING, ClassVar, Literal
 
 import numpy as np
 from loguru import logger
@@ -29,6 +29,7 @@ from physicalai_rebot_b601_plugin.constants import (
 )
 
 if TYPE_CHECKING:
+    from motorbridge import Motor
     from physicalai.capture.frame import Frame
     from physicalai.robot.interface import RobotObservation
 
@@ -36,38 +37,6 @@ from motorbridge import Controller, Mode
 
 ReBotRSCanAdapter = Literal["socketcan", "robstride"]
 ReBotRole = Literal["follower"]
-
-
-class _MotorBridgeState(Protocol):
-    """Minimal protocol for a motor feedback state object from motorbridge."""
-
-    status_code: int
-    pos: float
-    vel: float
-    torq: float
-    t_mos: float
-    t_rotor: float
-
-
-class _MotorBridgeMotor(Protocol):
-    """Minimal protocol for a single RobStride motor from motorbridge."""
-
-    def ensure_mode(self, mode: object) -> None: ...
-    def request_feedback(self) -> None: ...
-    def get_state(self) -> _MotorBridgeState | None: ...
-    def send_mit(self, pos: float, vel: float, kp: float, kd: float, tau: float) -> None: ...
-    def clear_error(self) -> None: ...
-    def close(self) -> None: ...
-
-
-class _MotorBridgeController(Protocol):
-    """Minimal protocol for the motorbridge Controller managing RobStride motors."""
-
-    def add_robstride_motor(self, motor_id: int, feedback_id: int, model: str) -> _MotorBridgeMotor: ...
-    def disable_all(self) -> None: ...
-    def enable_all(self) -> None: ...
-    def poll_feedback_once(self) -> None: ...
-    def close(self) -> None: ...
 
 
 @dataclass
@@ -145,8 +114,8 @@ class ReBotB601RS:
         self._gripper_mit_kp = gripper_mit_kp
         self._gripper_mit_kd = gripper_mit_kd
         self._gripper_mit_torque_limit = gripper_mit_torque_limit
-        self._controller: _MotorBridgeController | None = None
-        self._motors: dict[str, _MotorBridgeMotor] = {}
+        self._controller: Controller | None = None
+        self._motors: dict[str, Motor] = {}
         self._gripper_prev_target_pos: float | None = None
         self._gripper_prev_filtered_target_vel: float | None = None
 
@@ -179,7 +148,7 @@ class ReBotB601RS:
     def disable_torque_on_disconnect(self, value: bool) -> None:
         self._disable_torque_on_disconnect = value
 
-    def _require_controller(self) -> _MotorBridgeController:
+    def _require_controller(self) -> Controller:
         controller = self._controller
         if controller is None:
             msg = "Robot is not connected. Call connect() first."
@@ -203,14 +172,14 @@ class ReBotB601RS:
 
         logger.info(f"ReBotB601RS connected on {self.port} (adapter={self.can_adapter})")
 
-    def _open_controller(self) -> _MotorBridgeController:
+    def _open_controller(self) -> Controller:
         if self.can_adapter == "robstride":
             msg = "can_adapter='robstride' is not supported by the current MotorBridge Python SDK. Use socketcan."
             raise NotImplementedError(msg)
         return Controller(channel=self.port)
 
-    def _register_motors(self, controller: _MotorBridgeController) -> dict[str, _MotorBridgeMotor]:
-        motors: dict[str, _MotorBridgeMotor] = {}
+    def _register_motors(self, controller: Controller) -> dict[str, Motor]:
+        motors: dict[str, Motor] = {}
         for name in self.JOINT_ORDER:
             motor_id, feedback_id = REBOT_B601_RS_MOTOR_IDS[name]
             motors[name] = controller.add_robstride_motor(motor_id, feedback_id, REBOT_B601_RS_MOTOR_MODELS[name])
@@ -229,7 +198,7 @@ class ReBotB601RS:
         logger.info(f"ReBotB601RS disconnected from {self.port}")
 
     def _disconnect_motors(self) -> None:
-        if self.disable_torque_on_disconnect:
+        if self.disable_torque_on_disconnect and self._controller is not None:
             with contextlib.suppress(Exception):
                 self._controller.disable_all()
         for name, motor in self._motors.items():

@@ -11,7 +11,7 @@ import contextlib
 import math
 import time
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, ClassVar, Literal, Protocol
+from typing import TYPE_CHECKING, ClassVar, Literal
 
 import numpy as np
 from loguru import logger
@@ -28,6 +28,7 @@ from physicalai_rebot_b601_plugin.constants import (
 )
 
 if TYPE_CHECKING:
+    from motorbridge import Motor, MotorState
     from physicalai.capture.frame import Frame
     from physicalai.robot.interface import RobotObservation
 
@@ -35,41 +36,6 @@ from motorbridge import Controller, Mode
 
 ReBotCANAdapter = Literal["damiao", "socketcan"]
 ReBotRole = Literal["follower"]
-
-
-class _MotorBridgeState(Protocol):
-    """Minimal protocol for a motor feedback state object from motorbridge."""
-
-    status_code: int
-    pos: float
-    vel: float
-    torq: float
-    t_mos: float
-    t_rotor: float
-
-
-class _MotorBridgeMotor(Protocol):
-    """Minimal protocol for a single Damiao motor from motorbridge."""
-
-    def enable(self) -> None: ...
-    def disable(self) -> None: ...
-    def ensure_mode(self, mode: object) -> None: ...
-    def request_feedback(self) -> None: ...
-    def get_state(self) -> _MotorBridgeState | None: ...
-    def send_pos_vel(self, pos: float, vlim: float) -> None: ...
-    def send_force_pos(self, pos: float, vlim: float, ratio: float) -> None: ...
-    def clear_error(self) -> None: ...
-    def close(self) -> None: ...
-
-
-class _MotorBridgeController(Protocol):
-    """Minimal protocol for the motorbridge Controller managing a group of motors."""
-
-    def add_damiao_motor(self, motor_id: int, feedback_id: int, model: str) -> _MotorBridgeMotor: ...
-    def disable_all(self) -> None: ...
-    def enable_all(self) -> None: ...
-    def poll_feedback_once(self) -> None: ...
-    def close(self) -> None: ...
 
 
 @dataclass
@@ -146,8 +112,8 @@ class ReBotB601DM:
         self._role = role
         self._disable_torque_on_disconnect = disable_torque_on_disconnect
         self._force_pos_torque_ratio = force_pos_torque_ratio
-        self._controller: _MotorBridgeController | None = None
-        self._motors: dict[str, _MotorBridgeMotor] = {}
+        self._controller: Controller | None = None
+        self._motors: dict[str, Motor] = {}
 
     @property
     def joint_names(self) -> list[str]:
@@ -178,7 +144,7 @@ class ReBotB601DM:
     def disable_torque_on_disconnect(self, value: bool) -> None:
         self._disable_torque_on_disconnect = value
 
-    def _require_controller(self) -> _MotorBridgeController:
+    def _require_controller(self) -> Controller:
         controller = self._controller
         if controller is None:
             msg = "Robot is not connected. Call connect() first."
@@ -202,13 +168,13 @@ class ReBotB601DM:
 
         logger.info(f"ReBotB601DM connected on {self.port} (adapter={self.can_adapter})")
 
-    def _open_controller(self) -> _MotorBridgeController:
+    def _open_controller(self) -> Controller:
         if self.can_adapter == "damiao":
             return Controller.from_dm_serial(serial_port=self.port, baud=self._dm_serial_baud)
         return Controller(channel=self.port)
 
-    def _register_motors(self, controller: _MotorBridgeController) -> dict[str, _MotorBridgeMotor]:
-        motors: dict[str, _MotorBridgeMotor] = {}
+    def _register_motors(self, controller: Controller) -> dict[str, Motor]:
+        motors: dict[str, Motor] = {}
         for name in self.JOINT_ORDER:
             motor_id, feedback_id = REBOT_B601_DM_MOTOR_IDS[name]
             motors[name] = controller.add_damiao_motor(motor_id, feedback_id, REBOT_B601_DM_MOTOR_MODELS[name])
@@ -227,7 +193,7 @@ class ReBotB601DM:
         logger.info(f"ReBotB601DM disconnected from {self.port}")
 
     def _disconnect_motors(self) -> None:
-        if self.disable_torque_on_disconnect:
+        if self.disable_torque_on_disconnect and self._controller is not None:
             with contextlib.suppress(Exception):
                 self._controller.disable_all()
         for name, motor in self._motors.items():
@@ -271,7 +237,7 @@ class ReBotB601DM:
         """Reconfigure all motors to their position-control modes."""
         self._configure_motors()
 
-    def _read_motor_states(self) -> list[_MotorBridgeState]:
+    def _read_motor_states(self) -> list[MotorState]:
         if not self.is_connected():
             msg = "Robot is not connected. Call connect() first."
             raise ConnectionError(msg)
@@ -280,7 +246,7 @@ class ReBotB601DM:
             motor.request_feedback()
         controller.poll_feedback_once()
 
-        states: list[_MotorBridgeState] = []
+        states: list[MotorState] = []
         for name in self.JOINT_ORDER:
             state = self._motors[name].get_state()
             if state is None:
