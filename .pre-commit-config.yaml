@@ -13,6 +13,15 @@ repos:
         args: [--fix, --unsafe-fixes]
       - id: ruff-format
 
+  - repo: https://github.com/facebook/pyrefly-pre-commit
+    rev: 0.58.0
+    hooks:
+      - id: pyrefly-check
+        name: Pyrefly (type checking)
+        entry: uv run pyrefly check
+        language: system
+        pass_filenames: false
+
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.46.0
     hooks:

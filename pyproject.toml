@@ -22,7 +22,7 @@ dependencies = [
 tests = ["pytest"]
 
 [dependency-groups]
-dev = ["pytest", "mypy", "ruff>=0.15.12", "prek"]
+dev = ["pytest", "mypy", "ruff>=0.15.12", "prek", "pyrefly>=0.58.0"]
 
 [project.urls]
 Homepage = "https://github.com/MarkRedeman/physicalai-rebot-b601-plugin"
@@ -125,4 +125,9 @@ exclude_lines = [
 
 [tool.coverage.paths]
 source = ["src"]
+
+[tool.pyrefly]
+python-version = "3.13"
+search-path = ["src"]
+project-includes = ["src"]
 
