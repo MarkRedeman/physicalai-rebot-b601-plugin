@@ -28,6 +28,9 @@ Homepage = "https://github.com/MarkRedeman/physicalai-rebot-b601-plugin"
 Repository = "https://github.com/MarkRedeman/physicalai-rebot-b601-plugin"
 Issues = "https://github.com/MarkRedeman/physicalai-rebot-b601-plugin/issues"
 
+[project.entry-points."physicalai.studio.catalog_plugins"]
+rebot-b601 = "physicalai_rebot_b601_plugin.studio_catalog:register_physicalai_studio_plugin"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/physicalai_rebot_b601_plugin"]
 
