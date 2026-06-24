@@ -28,10 +28,11 @@ from physicalai_rebot_b601_plugin.constants import (
 )
 
 if TYPE_CHECKING:
+    from motorbridge import Motor, MotorState
     from physicalai.capture.frame import Frame
     from physicalai.robot.interface import RobotObservation
 
-from motorbridge import Controller, Mode, Motor, MotorState
+from motorbridge import Controller, Mode
 
 ReBotCANAdapter = Literal["damiao", "socketcan"]
 ReBotRole = Literal["follower"]

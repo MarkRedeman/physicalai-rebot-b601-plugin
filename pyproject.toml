@@ -127,7 +127,7 @@ exclude_lines = [
 source = ["src"]
 
 [tool.pyrefly]
-python-version = "3.13"
+python-version = "3.12"
 search-path = ["src"]
 project-includes = ["src"]
 
