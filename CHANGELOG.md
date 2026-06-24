@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.0](https://github.com/MarkRedeman/physicalai-rebot-b601-plugin/compare/v0.2.0...v0.3.0) (2026-06-24)
+
+
+### Features
+
+* add robot_builder, payload_model, and adapter_options to catalog plugin ([5d9f86d](https://github.com/MarkRedeman/physicalai-rebot-b601-plugin/commit/5d9f86d32dc8c1c5c787ec448c8b8234474370d8))
+* add robot_builder, payload_model, and adapter_options to catalog plugin ([a2e09d8](https://github.com/MarkRedeman/physicalai-rebot-b601-plugin/commit/a2e09d8fc3b302f281331c0e6d3627778553e9e4))
+* configure pyrefly ([99a334d](https://github.com/MarkRedeman/physicalai-rebot-b601-plugin/commit/99a334d3f67546d417542509574e48a703d2dfea))
+* Pyrefly integration ([d2237c4](https://github.com/MarkRedeman/physicalai-rebot-b601-plugin/commit/d2237c4e9c5b98ff6b9212579a0fa63f0997172b))
+
+
+### Bug Fixes
+
+* resolve all pyrefly type errors by removing redundant Protocol layers ([f4ab079](https://github.com/MarkRedeman/physicalai-rebot-b601-plugin/commit/f4ab079fdc653ee544396dde03ec7e5c7eb99fcd))
+
 ## [0.2.0](https://github.com/MarkRedeman/physicalai-rebot-b601-plugin/compare/v0.1.3...v0.2.0) (2026-06-24)
 
 
