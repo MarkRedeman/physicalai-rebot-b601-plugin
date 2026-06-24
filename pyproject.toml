@@ -15,6 +15,7 @@ dependencies = [
     "loguru>=0.7",
     "motorbridge>=0.4.4",
     "motorbridge-smart-servo>=0.0.4",
+    "pydantic>=2.0",
 ]
 
 [project.optional-dependencies]
