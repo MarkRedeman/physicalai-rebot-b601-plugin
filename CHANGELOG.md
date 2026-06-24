@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/MarkRedeman/physicalai-rebot-b601-plugin/compare/v0.1.3...v0.2.0) (2026-06-24)
+
+
+### Features
+
+* register robot catalog with Physical AI Studio via entry point ([42ac1cd](https://github.com/MarkRedeman/physicalai-rebot-b601-plugin/commit/42ac1cd746afb10f740bac354c8ef7448797e5d8))
+* register robot catalog with Physical AI Studio via entry point ([a2b30a8](https://github.com/MarkRedeman/physicalai-rebot-b601-plugin/commit/a2b30a83add63a976322d3fd7c531a7db1351894))
+
 ## [0.1.3](https://github.com/MarkRedeman/physicalai-rebot-b601-plugin/compare/v0.1.2...v0.1.3) (2026-06-23)
 
 
