@@ -100,18 +100,8 @@ jobs:
         run: |
           uv venv .venv-smoke
           uv pip install dist/*.whl
-          uv run python -c "
-          import json, importlib.metadata as metadata
-          with open('.github/release-please-config.json') as f:
-              config = json.load(f)
-          for path, pkg in config['packages'].items():
-              name = pkg['package-name']
-              try:
-                  v = metadata.version(name)
-                  print(f'{name}: {v}')
-              except Exception as e:
-                  print(f'{name}: NOT FOUND ({e})')
-          "
+          PKGS=$(jq -r '[.packages[] | .["package-name"]] | join(" ")' .github/release-please-config.json)
+          uv run python scripts/smoke.py $PKGS
 
   publish:
     name: Publish to TestPyPI
