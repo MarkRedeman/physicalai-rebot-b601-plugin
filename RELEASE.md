@@ -1,6 +1,6 @@
 # Release Process
 
-This repository uses [release-please](https://github.com/googleapis/release-please) for automated releases of three Python packages:
+This repository uses [release-please](https://github.com/googleapis/release-please) for automated releases of Python packages defined in `.github/release-please-config.json`. Currently:
 
 - `physicalai-rebot-b601-plugin`
 

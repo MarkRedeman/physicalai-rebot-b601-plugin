@@ -235,10 +235,10 @@ Install the optional hardware SDKs:
 uv add physicalai-rebot-b601-plugin
 ```
 
-If you are developing the plugin locally:
+If you are developing the plugin locally (from the repo root):
 
 ```bash
-uv add -e .
+uv add -e packages/physicalai-rebot-b601-plugin
 ```
 
 ---

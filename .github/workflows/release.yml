@@ -20,6 +20,7 @@ jobs:
       pull-requests: write # to create release PRs
     outputs:
       packages: ${{ steps.packages.outputs.matrix }}
+      rp_outputs: ${{ toJSON(steps.release-please.outputs) }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -41,7 +42,7 @@ jobs:
   build:
     name: Build ${{ matrix.package.name }}
     needs: release-please
-    if: ${{ fromJSON(needs.release-please.outputs[format('{0}--release_created', matrix.package.path)]) }}
+    if: ${{ fromJSON(needs.release-please.outputs.rp_outputs)[format('{0}--release_created', matrix.package.path)] == 'true' }}
     strategy:
       matrix:
         package: ${{ fromJSON(needs.release-please.outputs.packages) }}
@@ -51,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ needs.release-please.outputs[format('{0}--tag_name', matrix.package.path)] }}
+          ref: ${{ fromJSON(needs.release-please.outputs.rp_outputs)[format('{0}--tag_name', matrix.package.path)] }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -78,7 +79,7 @@ jobs:
   smoke:
     name: Smoke test ${{ matrix.package.name }}
     needs: [release-please, build]
-    if: ${{ fromJSON(needs.release-please.outputs[format('{0}--release_created', matrix.package.path)]) }}
+    if: ${{ fromJSON(needs.release-please.outputs.rp_outputs)[format('{0}--release_created', matrix.package.path)] == 'true' }}
     strategy:
       matrix:
         package: ${{ fromJSON(needs.release-please.outputs.packages) }}
@@ -115,7 +116,7 @@ jobs:
   publish:
     name: Publish ${{ matrix.package.name }} to PyPI
     needs: [release-please, smoke]
-    if: ${{ fromJSON(needs.release-please.outputs[format('{0}--release_created', matrix.package.path)]) }}
+    if: ${{ fromJSON(needs.release-please.outputs.rp_outputs)[format('{0}--release_created', matrix.package.path)] == 'true' }}
     strategy:
       matrix:
         package: ${{ fromJSON(needs.release-please.outputs.packages) }}
