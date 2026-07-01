@@ -118,7 +118,7 @@ jobs:
     needs: smoke-test
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # needed to authenticate with TestPyPI via OIDC
+      id-token: write # needed to authenticate with TestPyPI via OIDC
     environment:
       name: testpypi
       url: https://test.pypi.org/

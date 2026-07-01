@@ -10,17 +10,17 @@ Individual commit messages can be written freely. However, PR titles must follow
 
 **Supported types:**
 
-| Type | Description | Version bump |
-|------|-------------|--------------|
-| `feat` | New feature | MINOR |
-| `fix` | Bug fix | PATCH |
-| `perf` | Performance improvement | PATCH |
-| `refactor` | Code refactoring | — |
-| `docs` | Documentation only | — |
-| `test` | Adding/updating tests | — |
-| `ci` | CI/CD changes | — |
-| `chore` | Maintenance tasks | — |
-| `revert` | Revert a previous change | — |
+| Type       | Description              | Version bump |
+| ---------- | ------------------------ | ------------ |
+| `feat`     | New feature              | MINOR        |
+| `fix`      | Bug fix                  | PATCH        |
+| `perf`     | Performance improvement  | PATCH        |
+| `refactor` | Code refactoring         | —            |
+| `docs`     | Documentation only       | —            |
+| `test`     | Adding/updating tests    | —            |
+| `ci`       | CI/CD changes            | —            |
+| `chore`    | Maintenance tasks        | —            |
+| `revert`   | Revert a previous change | —            |
 
 For **breaking** changes — add `!` after the type to trigger a MAJOR version bump, e.g. `feat!: remove deprecated API`.
 
@@ -35,8 +35,8 @@ For **breaking** changes — add `!` after the type to trigger a MAJOR version b
 
 Package versions are **not hardcoded** — they are derived from git tags at build time via [`hatch-vcs`](https://github.com/ofek/hatch-vcs). Each package has its own tag pattern:
 
-| Package | Tag pattern |
-|---------|-------------|
+| Package                        | Tag pattern                              |
+| ------------------------------ | ---------------------------------------- |
 | `physicalai-rebot-b601-plugin` | `physicalai-rebot-b601-plugin-v<semver>` |
 
 ## Testing a Release (TestPyPI)

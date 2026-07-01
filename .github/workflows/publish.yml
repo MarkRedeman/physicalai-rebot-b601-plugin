@@ -17,7 +17,7 @@ jobs:
     name: Identify package
     runs-on: ubuntu-latest
     permissions:
-      contents: read  # to checkout the repo and read release-please config
+      contents: read # to checkout the repo and read release-please config
     outputs:
       package: ${{ steps.parse.outputs.package }}
       path: ${{ steps.parse.outputs.path }}
@@ -53,7 +53,7 @@ jobs:
     if: needs.identify.outputs.package != ''
     runs-on: ubuntu-latest
     permissions:
-      contents: read  # to checkout the repo and build
+      contents: read # to checkout the repo and build
     steps:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -92,7 +92,7 @@ jobs:
       - build
     runs-on: ubuntu-latest
     permissions:
-      contents: read  # to download artifacts
+      contents: read # to download artifacts
     steps:
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
@@ -133,7 +133,7 @@ jobs:
       - smoke-test
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # needed to authenticate with PyPI via OIDC
+      id-token: write # needed to authenticate with PyPI via OIDC
     environment:
       name: pypi
       url: https://pypi.org/p/${{ needs.identify.outputs.pypi_name }}

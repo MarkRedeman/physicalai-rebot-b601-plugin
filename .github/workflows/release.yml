@@ -16,8 +16,8 @@ jobs:
     name: Release Please
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # to create releases and tags
-      pull-requests: write  # to create release PRs
+      contents: write # to create releases and tags
+      pull-requests: write # to create release PRs
     outputs:
       packages: ${{ steps.packages.outputs.matrix }}
     steps:
@@ -84,7 +84,7 @@ jobs:
         package: ${{ fromJSON(needs.release-please.outputs.packages) }}
     runs-on: ubuntu-latest
     permissions:
-      contents: read  # to download artifacts
+      contents: read # to download artifacts
     steps:
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
@@ -121,7 +121,7 @@ jobs:
         package: ${{ fromJSON(needs.release-please.outputs.packages) }}
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # needed to authenticate with PyPI via OIDC
+      id-token: write # needed to authenticate with PyPI via OIDC
     environment:
       name: pypi
       url: https://pypi.org/p/${{ matrix.package.name }}

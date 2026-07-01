@@ -21,6 +21,20 @@ fixable = ["ALL"]
 unfixable = []
 
 [tool.ruff.lint.per-file-ignores]
+"packages/*/tests/**/*.py" = [
+    "ARG001",
+    "ARG002",
+    "B903",
+    "D",
+    "INP001",
+    "PLC0415",
+    "PLC1901",
+    "PLC2701",
+    "PLR2004",
+    "PLR6301",
+    "RUF069",
+    "S101",
+]
 "packages/physicalai-rebot-b601-plugin/src/physicalai_rebot_b601_plugin/__init__.py" = ["PLC0415"]
 "packages/physicalai-rebot-b601-plugin/src/physicalai_rebot_b601_plugin/dm.py" = ["ARG002", "PLR0913"]
 "packages/physicalai-rebot-b601-plugin/src/physicalai_rebot_b601_plugin/rs.py" = ["ARG002", "PLR0913"]
@@ -85,5 +99,5 @@ source = ["packages/*/src"]
 
 [tool.pyrefly]
 python-version = "3.12"
-search-path = ["packages/*/src"]
-project-includes = ["packages/*/src"]
+search-path = ["packages/physicalai-rebot-b601-plugin/src"]
+project-includes = ["packages/physicalai-rebot-b601-plugin/src"]
